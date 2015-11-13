@@ -1,11 +1,14 @@
 package com.codepath.android.lollipopexercise.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.codepath.android.lollipopexercise.R;
 import com.codepath.android.lollipopexercise.adapters.ContactsAdapter;
@@ -16,14 +19,15 @@ import java.util.List;
 
 public class ContactsActivity extends AppCompatActivity {
     private ContactsAdapter mAdapter;
-
+    RecyclerView rvContacts;
+    List<Contact> contacts;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
 
         // Find RecyclerView and bind to adapter
-        final RecyclerView rvContacts = (RecyclerView) findViewById(R.id.rvContacts);
+        rvContacts = (RecyclerView) findViewById(R.id.rvContacts);
 
         // allows for optimizations
         rvContacts.setHasFixedSize(true);
@@ -36,7 +40,7 @@ public class ContactsActivity extends AppCompatActivity {
         rvContacts.setLayoutManager(layout);
 
         // get data
-        List<Contact> contacts = Contact.getContacts();
+        contacts = Contact.getContacts();
 
         // Create an adapter
         mAdapter = new ContactsAdapter(ContactsActivity.this, contacts);
@@ -57,8 +61,29 @@ public class ContactsActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        switch (item.getItemId()) {
+            case R.id.miAdd:
+                final Contact contact = Contact.getRandomContact(this);
+                contacts.add(0, contact);
+                mAdapter.notifyDataSetChanged();
 
-        return super.onOptionsItemSelected(item);
+                Snackbar.make(rvContacts, "Undo", Snackbar.LENGTH_LONG)
+                        .setAction("Undo", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                contacts.remove(0);
+                                mAdapter.notifyDataSetChanged();
+                            }
+                        })
+                        .show(); // Don’t forget to show!
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void openDetailedView() {
+        Intent i = new Intent(this, DetailsActivity.class);
+        startActivity(i);
     }
 }
